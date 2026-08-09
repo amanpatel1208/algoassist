@@ -9,6 +9,9 @@
     <a href="#local-development">Local Setup</a> •
     <a href="#deployment">Deployment</a>
   </p>
+  <p>
+    <a href="https://algoassist.netlify.app" target="_blank"><strong>🌐 Live Demo →</strong></a>
+  </p>
 </div>
 
 <br/>
