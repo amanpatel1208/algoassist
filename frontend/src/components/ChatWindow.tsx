@@ -5,6 +5,7 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import apiClient from '../api/client';
+import FormattedMessage from './FormattedMessage';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -210,7 +211,7 @@ export default function ChatWindow({ onSessionFinished, hintsRemaining, onHintUs
                       : 'bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border text-light-text dark:text-dark-text'
                   }`}
                 >
-                  {msg.content}
+                  <FormattedMessage content={msg.content} role={msg.role} />
                 </div>
               </div>
             ))}

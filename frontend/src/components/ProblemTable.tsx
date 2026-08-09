@@ -1,20 +1,6 @@
 import { TrashIcon } from '@heroicons/react/24/outline';
 
-export interface Problem {
-  id: string;
-  problem_name: string;
-  difficulty: string;
-  topic: string;
-  pattern: string;
-  confidence: string;
-  hint_needed: boolean;
-  core_insight: string;
-  interview_frequency: string;
-  source: string;
-  solved_at: string;
-  notes?: string;
-  solve_time?: number;
-}
+import { Problem } from '../types';
 
 interface ProblemTableProps {
   problems: Problem[];
@@ -71,7 +57,34 @@ function SortIcon({ field, sortField, sortDirection }: { field: string; sortFiel
   );
 }
 
+function getRevisionStatus(problem: Problem) {
+  if (!problem.solved_at) return { status: 'None', text: '-' };
+  const solvedObj = new Date(problem.solved_at);
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  
+  let intervals = [3, 7];
+  if (problem.confidence === 'Low') intervals = [1, 3, 7];
+  if (problem.confidence === 'High') intervals = [14];
+  
+  for (const days of intervals) {
+    const reviewDate = new Date(solvedObj);
+    reviewDate.setDate(reviewDate.getDate() + days);
+    reviewDate.setHours(0,0,0,0);
+    
+    if (reviewDate.getTime() === now.getTime()) {
+      return { status: 'Due', text: 'Due Today' };
+    } else if (reviewDate > now) {
+      const diffTime = Math.abs(reviewDate.getTime() - now.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return { status: 'Pending', text: `In ${diffDays}d` };
+    }
+  }
+  return { status: 'Done', text: 'Done' };
+}
+
 const columns = [
+  { key: 'index', label: '#' },
   { key: 'problem_name', label: 'Problem' },
   { key: 'difficulty', label: 'Difficulty' },
   { key: 'topic', label: 'Topic' },
@@ -82,6 +95,7 @@ const columns = [
   { key: 'interview_frequency', label: 'Freq.' },
   { key: 'source', label: 'Source' },
   { key: 'solved_at', label: 'Date' },
+  { key: 'revision', label: 'Revision' },
 ];
 
 export default function ProblemTable({ problems, onDelete, sortField, sortDirection, onSort }: ProblemTableProps) {
@@ -102,25 +116,7 @@ export default function ProblemTable({ problems, onDelete, sortField, sortDirect
       {/* Toolbar */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-semibold text-light-text dark:text-dark-text">Problem Tracker</h2>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <svg className="w-4 h-4 text-light-muted dark:text-dark-muted absolute left-2.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-xs rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:border-brand text-light-text dark:text-dark-text"
-            />
-          </div>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface rounded-md text-xs font-medium text-light-text dark:text-dark-text hover:bg-light-bg dark:hover:bg-dark-bg transition-colors">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            Filter
-          </button>
-        </div>
+        <p className="text-xs text-light-muted dark:text-dark-muted">{problems.length} problem{problems.length !== 1 ? 's' : ''} tracked</p>
       </div>
       
       <div className="border border-light-border dark:border-dark-border rounded-md bg-light-surface dark:bg-dark-surface overflow-hidden">
@@ -144,60 +140,75 @@ export default function ProblemTable({ problems, onDelete, sortField, sortDirect
             </tr>
           </thead>
           <tbody className="divide-y divide-light-border/60 dark:divide-dark-border/60">
-            {problems.map((problem) => (
-              <tr
-                key={problem.id}
-                className="hover:bg-light-bg/60 dark:hover:bg-dark-bg/40 transition-colors"
-              >
-                <td className="px-4 py-3 font-medium text-light-text dark:text-dark-text whitespace-nowrap">
-                  {problem.problem_name}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <DifficultyBadge level={problem.difficulty} />
-                </td>
-                <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
-                  {problem.topic}
-                </td>
-                <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
-                  {problem.pattern}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <ConfidenceBadge level={problem.confidence} />
-                </td>
-                <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
-                  {problem.hint_needed ? (
-                    <span className="text-amber-600 dark:text-amber-400">Yes</span>
-                  ) : (
-                    <span className="text-emerald-600 dark:text-emerald-400">No</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-light-muted dark:text-dark-muted max-w-[200px] truncate" title={problem.core_insight}>
-                  {problem.core_insight}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <ConfidenceBadge level={problem.interview_frequency} />
-                </td>
-                <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
-                  {problem.source}
-                </td>
-                <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
-                  {new Date(problem.solved_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <button
-                    onClick={() => onDelete(problem.id)}
-                    className="p-1 rounded text-light-muted/50 dark:text-dark-muted/50 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                    aria-label="Delete problem"
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {problems.map((problem, idx) => {
+              const revStatus = getRevisionStatus(problem);
+              return (
+                <tr
+                  key={problem.id}
+                  className="hover:bg-light-bg/60 dark:hover:bg-dark-bg/40 transition-colors"
+                >
+                  <td className="px-4 py-3 font-medium text-light-muted dark:text-dark-muted whitespace-nowrap">
+                    {idx + 1}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-light-text dark:text-dark-text whitespace-nowrap">
+                    {problem.problem_name}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <DifficultyBadge level={problem.difficulty} />
+                  </td>
+                  <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
+                    {problem.topic}
+                  </td>
+                  <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
+                    {problem.pattern}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <ConfidenceBadge level={problem.confidence} />
+                  </td>
+                  <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
+                    {problem.hint_needed ? (
+                      <span className="text-amber-600 dark:text-amber-400">Yes</span>
+                    ) : (
+                      <span className="text-emerald-600 dark:text-emerald-400">No</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-light-muted dark:text-dark-muted max-w-[200px] truncate" title={problem.core_insight}>
+                    {problem.core_insight}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <ConfidenceBadge level={problem.interview_frequency} />
+                  </td>
+                  <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
+                    {problem.source}
+                  </td>
+                  <td className="px-4 py-3 text-light-muted dark:text-dark-muted whitespace-nowrap">
+                    {new Date(problem.solved_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                      revStatus.status === 'Due' ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20' :
+                      revStatus.status === 'Pending' ? 'text-amber-500 bg-amber-500/10' :
+                      'text-light-muted dark:text-dark-muted'
+                    }`}>
+                      {revStatus.text}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <button
+                      onClick={() => onDelete(problem.id)}
+                      className="p-1 rounded text-light-muted/50 dark:text-dark-muted/50 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                      aria-label="Delete problem"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

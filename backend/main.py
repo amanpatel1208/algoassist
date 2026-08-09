@@ -1,9 +1,14 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes.auth import router as auth_router
-from routes.problems import router as problems_router
-from routes.chat import router as chat_router
+# pyrefly: ignore [missing-import]
+from controllers.auth import router as auth_router
+# pyrefly: ignore [missing-import]
+from controllers.problems import router as problems_router
+# pyrefly: ignore [missing-import]
+from controllers.chat import router as chat_router
 
 app = FastAPI(title="AlgoAssist API")
 

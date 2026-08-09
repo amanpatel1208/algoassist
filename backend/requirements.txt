@@ -1,8 +1,11 @@
 fastapi
 uvicorn
-pymongo
+pymongo[srv]
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt
 google-generativeai
 python-dotenv
-pydantic
+pydantic[email]
+certifi
+beautifulsoup4==4.12.3
