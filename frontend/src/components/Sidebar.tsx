@@ -39,8 +39,8 @@ export default function Sidebar({ hintsRemaining, userName, collapsed, onToggle 
       {/* Logo & Toggle */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-transparent">
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className="w-8 h-8 shrink-0 bg-brand rounded flex items-center justify-center">
-            <span className="text-white text-sm font-bold">A</span>
+          <div className="w-8 h-8 shrink-0 rounded flex items-center justify-center overflow-hidden">
+            <img src="/favicon.png" alt="AlgoAssist Logo" className="w-full h-full object-cover" />
           </div>
           {!collapsed && <span className="font-semibold text-light-text dark:text-dark-text tracking-tight whitespace-nowrap">AlgoAssist</span>}
         </div>
