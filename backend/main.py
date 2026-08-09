@@ -1,3 +1,4 @@
+import os
 # pyrefly: ignore [missing-import]
 from fastapi import FastAPI
 # pyrefly: ignore [missing-import]
@@ -18,8 +19,14 @@ origins = [
     "http://localhost:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
-    # Add Netlify domain here when deployed
+    "https://algoassist-7et0.onrender.com"
 ]
+
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    # Handle multiple URLs separated by commas if needed
+    for url in frontend_url.split(","):
+        origins.append(url.strip())
 
 app.add_middleware(
     CORSMiddleware,
