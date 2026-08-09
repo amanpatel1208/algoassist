@@ -10,7 +10,7 @@ load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/algoassist")
 client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
-db = client.get_database("algoassist") if "localhost" in MONGO_URI else client.get_database()
+db = client.get_database("algoassist")
 
 users_collection = db["users"]
 problems_collection = db["problems"]
