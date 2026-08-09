@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./frontend/public/vite.svg" alt="AlgoAssist Logo" width="100"/>
+  <img src="./frontend/public/favicon.png" alt="AlgoAssist Logo" width="100"/>
   <h1>AlgoAssist</h1>
   <p><em>Your AI-Powered DSA Mentor & Interview Prep Tracker</em></p>
   <p>
